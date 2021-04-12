@@ -1,0 +1,120 @@
+{
+	"info": {
+		"_postman_id": "60b9ddd5-dbda-4ca1-b319-11692200eea1",
+		"name": "DKChallenge",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "searchContAboveValue",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"indexBegin\": 0,\r\n    \"indexEnd\": 1275,\r\n    \"threshold\": 2,\r\n    \"winLength\": 4\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:8080/searchContinuityAboveValue",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"searchContinuityAboveValue"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "backSearchContWithinRange",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"indexBegin\": 1275,\r\n    \"indexEnd\": 0,\r\n    \"thresholdHi\": 2,\r\n    \"thresholdLow\" : 0, \r\n    \"winLength\": 4\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": null
+			},
+			"response": []
+		},
+		{
+			"name": "searchContAboveValueTwoSignals",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"indexBegin\": 0,\r\n    \"indexEnd\": 5,\r\n    \"threshold1\": 2,\r\n    \"threshold2\" : 3, \r\n    \"winLength\": 1\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:8080/searchContinuityAboveValueTwoSignals",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"searchContinuityAboveValueTwoSignals"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "searchMultiContWithinRange",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"indexBegin\": 0,\r\n    \"indexEnd\": 1275,\r\n    \"thresholdHi\": 5,\r\n    \"thresholdLow\" : 4, \r\n    \"winLength\": 2\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:8080/searchMultiContinuityWithinRange",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"searchMultiContinuityWithinRange"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
