@@ -17,10 +17,10 @@ public class searchMultiContinuityWithinRangeTests {
     @org.junit.Test
     public void searchMultiContinuityWithinRangeSuccess(){
         LinkedList<SwingData> data = dataService.getData("testCSVS/searchMultiContinuityWithinRangeTests.csv");
-        int[]shouldBeFromFourToEight = dataService.returnIndicesWithinRange(data,0,8,(float)3.9,(float)2.9,1);
+        int[] shouldBeFromFourToEight = dataService.returnIndicesWithinRange(data,0,8,(float)3.9,(float)2.9,1);
         int[] correctIndices = {4,8};
-        assertEquals(correctIndices[0], shouldBeFromFourToEight[0]);
-        assertEquals(correctIndices[1], shouldBeFromFourToEight[1]);
+        assertArrayEquals(correctIndices, shouldBeFromFourToEight);
+
     }
 
     @org.junit.Test
@@ -35,9 +35,7 @@ public class searchMultiContinuityWithinRangeTests {
         LinkedList<SwingData> data = dataService.getData("testCSVS/searchMultiContinuityWithinRangeTests.csv");
         int[] shouldBeginAndEndSameIndex = dataService.returnIndicesWithinRange(data,0,8,(float)1.1,(float)0.9,1);
         int[] correctIndices = {1,1};
-        assertEquals(correctIndices[0], shouldBeginAndEndSameIndex[0]);
-        assertEquals(correctIndices[1], shouldBeginAndEndSameIndex[1]);
-        assertEquals(correctIndices[0], shouldBeginAndEndSameIndex[1]);
+        assertArrayEquals(correctIndices, shouldBeginAndEndSameIndex);
     }
 
 
