@@ -110,14 +110,46 @@ public class DataService {
         return index;
     }
 
-    public Optional <int[]> returnIndicesWithinRange(HashMap<Integer, Float> swingData, int indexBegin, int indexEnd, float thresholdHi, float thresholdLow, int winLength){
+    public ArrayList<int[]> returnIndicesWithinRange(HashMap<Integer, Float> swingData, int indexBegin, int indexEnd, float thresholdHi, float thresholdLow, int winLength){
 
-//        ArrayList<Integer>indexList = makeListOfIndicesThatMeetConditions(swingData, indexBegin, indexEnd, thresholdHi, thresholdLow, winLength);
-//
-//        return checkListOfIndicesForMultiContinuity(indexList);
+        int counter = 0;
+        int firstIndex = 0;
+        int lastIndex = 0;
+        ArrayList<int[]> indicesOfContinuity = new ArrayList<int[]>();
+        boolean winLengthConditionsMet = false;
+
+        for( int i = indexBegin; i <= indexEnd; i++){
+
+            float dataPoint = swingData.get(i);
+
+            if (dataPoint > thresholdLow && dataPoint < thresholdHi){
+
+                counter++;
+
+                if(counter >= winLength){
+
+                    winLengthConditionsMet = true;
+                    firstIndex = i - counter;
+                    lastIndex = i;
+                }
+
+            }else if(dataPoint < thresholdLow || dataPoint > thresholdHi && winLengthConditionsMet){
+
+                int[] indices = new int[]{firstIndex, lastIndex - 1};
+                indicesOfContinuity.add(indices);
+                winLengthConditionsMet =  false;
+                counter = 0;
+
+            }else{
+                counter = 0;
+            }
+
+
+        }
+        return indicesOfContinuity;
     }
 
-    private SwingData populateSwingData(String[] data, int index){
+    private void populateSwingData(String[] data, int index){
         axData.put(index, Float.parseFloat(data[1]));
         ayData.put(index, Float.parseFloat(data[2]));
         azData.put(index, Float.parseFloat(data[3]));
@@ -125,70 +157,4 @@ public class DataService {
         wyData.put(index, Float.parseFloat(data[5]));
         wzData.put(index, Float.parseFloat(data[6]));
     }
-
-    private ArrayList<Float> addSwingDataToList(LinkedList<SwingData> allOfTheSwingData, int index){
-        ArrayList<Float> swingParameters = new ArrayList<Float>();
-        SwingData data = allOfTheSwingData.get(index);
-        swingParameters.add(data.getAx());
-        swingParameters.add(data.getAy());
-        swingParameters.add(data.getAz());
-        swingParameters.add(data.getWx());
-        swingParameters.add(data.getWy());
-        swingParameters.add(data.getWz());
-
-        return swingParameters;
-    }
-
-    private ArrayList<Integer> makeListOfIndicesThatMeetConditions(LinkedList<SwingData> allTheSwingData, int indexBegin, int indexEnd, float thresholdHi, float thresholdLow, int winLength){
-
-        int thresholdsMetCounter = 0;
-        ArrayList<Integer>indexList = new ArrayList<>();
-        for(int i = indexBegin; i <= indexEnd; i++){
-            ArrayList<Float> swingParameters = addSwingDataToList(allTheSwingData, i);
-            for(Float swingParameter : swingParameters){
-                if (swingParameter > thresholdLow && swingParameter < thresholdHi){
-                    thresholdsMetCounter++;
-                    if (thresholdsMetCounter >= winLength){
-                        indexList.add(i);
-                        break;
-                    }
-                }
-            }
-            thresholdsMetCounter = 0;
-        }
-
-        return indexList;
-    }
-
-    private int[] checkListOfIndicesForMultiContinuity(ArrayList<Integer> indexList){
-        int[] indices = new int[2];
-        int consecutiveRows = 1;
-        int largestNumberOfContinuousIndicesSoFar = 0;
-        int indexLast = 0;
-
-        if (indexList.size() == 1){
-            indices[0] = indexList.get(0);
-            indices[1] = indexList.get(0);
-            return indices;
-        } else if (indexList.size() == 0){                          //if index list is size 0 condition never met
-            return new int[0];
-        } else {
-            for(int i = 0; i < indexList.size() -1; i++){
-                if(indexList.get(i) == indexList.get(i + 1) - 1){
-                    consecutiveRows++;
-                    if (consecutiveRows > largestNumberOfContinuousIndicesSoFar){
-                        largestNumberOfContinuousIndicesSoFar = consecutiveRows;
-                        indexLast = indexList.get(i + 1);
-                    }
-                } else {
-                    consecutiveRows = 1;
-                }
-            }
-        }
-        int indexFirst = (indexLast - largestNumberOfContinuousIndicesSoFar) + 1;
-        indices[0] = indexFirst;
-        indices[1] = indexLast;
-        return indices;
-    }
-
 }
