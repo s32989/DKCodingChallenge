@@ -10,7 +10,6 @@ import java.util.LinkedList;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
-@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class searchContinuityAboveValueTests {
 
     DataService dataService = new DataService();

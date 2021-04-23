@@ -17,8 +17,7 @@ public class DataService {
 
         String line = "";
 
-        try {
-            BufferedReader br = new BufferedReader(new FileReader(fileName));
+        try (BufferedReader br = new BufferedReader(new FileReader(fileName))){
             while ((line = br.readLine()) != null)
             {
                 String[] swingDataSplit = line.split(",");

@@ -9,7 +9,6 @@ import java.util.LinkedList;
 
 import static org.junit.Assert.*;
 
-@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class searchMultiContinuityWithinRangeTests {
 
     DataService dataService = new DataService();
