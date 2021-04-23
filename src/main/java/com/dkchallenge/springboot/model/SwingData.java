@@ -47,4 +47,5 @@ public class SwingData {
     public float getWz() {
         return wz;
     }
+
 }
