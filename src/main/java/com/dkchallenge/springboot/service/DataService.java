@@ -1,195 +1,215 @@
 package com.dkchallenge.springboot.service;
 
-import com.dkchallenge.springboot.model.SwingData;
 import org.springframework.stereotype.Service;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.LinkedList;
+import java.io.*;
+import java.util.*;
 
 @Service
 public class DataService {
 
-    public LinkedList<SwingData> getData(String fileName){
-        LinkedList<SwingData> swingDataList = new LinkedList<SwingData>();
+    private HashMap<Integer, Float> axData = new HashMap<Integer, Float>();
+    private HashMap<Integer, Float> ayData = new HashMap<Integer, Float>();
+    private HashMap<Integer, Float> azData = new HashMap<Integer, Float>();
+    private HashMap<Integer, Float> wxData = new HashMap<Integer, Float>();
+    private HashMap<Integer, Float> wyData = new HashMap<Integer, Float>();
+    private HashMap<Integer, Float> wzData = new HashMap<Integer, Float>();
 
+    public DataService() {
+        this.getData();
+    }
+
+    public HashMap<Integer, Float> getAxData() {
+        return axData;
+    }
+
+    public HashMap<Integer, Float> getAyData() {
+        return ayData;
+    }
+
+    public HashMap<Integer, Float> getAzData() {
+        return azData;
+    }
+
+    public HashMap<Integer, Float> getWxData() {
+        return wxData;
+    }
+
+    public HashMap<Integer, Float> getWyData() {
+        return wyData;
+    }
+
+    public HashMap<Integer, Float> getWzData() {
+        return wzData;
+    }
+
+    private void getData() {
         String line = "";
+        int index = 0;
 
-        try (BufferedReader br = new BufferedReader(new FileReader(fileName))){
+        try (BufferedReader br = new BufferedReader(new FileReader("latestSwing.csv"))){
             while ((line = br.readLine()) != null)
             {
                 String[] swingDataSplit = line.split(",");
-                swingDataList.add(ModelSwingData(swingDataSplit));
+                populateSwingData(swingDataSplit, index);
+                index++;
             }
         }
         catch (IOException e) {
             e.printStackTrace();
         }
-
-        return swingDataList;
     }
 
-    public Integer returnIndexOfContinuityAboveValue(LinkedList<SwingData> swingData, int indexBegin, int indexEnd, float threshold, int winLength){
-        Integer index = null;
+    public Optional<Integer> returnIndexOfContinuityAboveValue(String columnName, int indexBegin, int indexEnd, float threshold, int winLength){
+
+        HashMap<Integer, Float> columnData = getColumnData(columnName);
+
+        Optional<Integer> index = Optional.empty();
+
         int counter = 0;
-        for(int i = indexBegin; i <= indexEnd; i++){
 
-            ArrayList<Float> swingParameters = addSwingDataToList(swingData, i);
+        for( int i = indexBegin; i <= indexEnd; i++){
 
-            for(int j = 0; j < swingParameters.size(); j++){
-                if (swingParameters.get(j) > threshold){
-                    counter++;
-                    if(counter >= winLength){
-                        index = i;
-                        return index;
-                    }
+            float dataPoint = columnData.get(i);
+
+            if (dataPoint > threshold){
+                counter++;
+                if (counter == winLength){
+                    index = Optional.of(i - winLength + 1);
+                    return index;
                 }
+            }else{
+                counter = 0;
             }
-            counter = 0;
         }
-
         return index;
     }
 
-    public Integer returnIndexOfContinuityWithinRange(LinkedList<SwingData> swingData, int indexBegin, int indexEnd, float thresholdHi, float thresholdLow, int winLength){
-        Integer index = null;
+    public Optional<Integer> returnIndexOfContinuityWithinRange(String columnName, int indexBegin, int indexEnd, float thresholdHi, float thresholdLow, int winLength){
+
+        HashMap<Integer, Float> columnData = getColumnData(columnName);
+
+        Optional<Integer> index = Optional.empty();
         int counter = 0;
+
         for(int i = indexBegin; i >= indexEnd; i--){
 
-            ArrayList<Float> swingParameters = addSwingDataToList(swingData, i);
+            float dataPoint = columnData.get(i);
 
-            for (Float swingParameter : swingParameters) {
-                if (swingParameter > thresholdLow && swingParameter < thresholdHi) {
-                    counter++;
-                    if (counter >= winLength) {
-                        index = i;
-                        return index;
-                    }
+            if (dataPoint > thresholdLow && dataPoint < thresholdHi){
+                counter++;
+                if (counter == winLength){
+                    index = Optional.of(i - winLength + 1);
+                    return index;
                 }
+            }else{
+                counter = 0;
             }
-            counter = 0;
         }
 
         return index;
     }
-    public Integer returnIndexOfDataWithinBothThresholds(LinkedList<SwingData> swingData1, LinkedList<SwingData> swingData2, int indexBegin, int indexEnd, float threshold1, float threshold2, int winLength){
-        Integer index = null;
+    public Optional<Integer> returnIndexOfDataWithinBothThresholds(String column1Name, String column2Name, int indexBegin, int indexEnd, float threshold1, float threshold2, int winLength){
+
+        HashMap<Integer, Float> column1Data = getColumnData(column1Name);
+        HashMap<Integer, Float> column2Data = getColumnData(column2Name);
+
+        Optional<Integer> index = Optional.empty();
         int counter1 = 0;
         int counter2 = 0;
 
         for(int i = indexBegin; i <= indexEnd; i++){
-            ArrayList<Float> swingParameters1 = addSwingDataToList(swingData1, i);
-            ArrayList<Float> swingParameters2 = addSwingDataToList(swingData2, i);
 
-            for(Float swingParameter : swingParameters1){
-                if(swingParameter > threshold1){
-                    counter1++;
-                }
+            float dataPoint1 = column1Data.get(i);
+            float dataPoint2 = column2Data.get(i);
+
+            if(dataPoint1 > threshold1){
+                counter1++;
+            } else {
+                counter1 = 0;
             }
 
-            for(Float swingParameter : swingParameters2){
-                if(swingParameter > threshold2){
-                    counter2++;
-                }
+            if(dataPoint2 > threshold2){
+                counter2++;
+            } else {
+                counter2 = 0;
             }
 
             if(counter1 >= winLength && counter2 >= winLength){
-                index = i;
+                index = Optional.of(i - winLength + 1);
                 return index;
             }
-
-            counter1 = 0;
-            counter2 = 0;
-
         }
 
         return index;
     }
 
-    public int[] returnIndicesWithinRange(LinkedList<SwingData> swingData, int indexBegin, int indexEnd, float thresholdHi, float thresholdLow, int winLength){
+    public Optional<ArrayList<int[]>> returnIndicesWithinRange(String columnName, int indexBegin, int indexEnd, float thresholdHi, float thresholdLow, int winLength){
 
-        ArrayList<Integer>indexList = makeListOfIndicesThatMeetConditions(swingData, indexBegin, indexEnd, thresholdHi, thresholdLow, winLength);
+        HashMap<Integer, Float> columnData = getColumnData(columnName);
 
-        return checkListOfIndicesForMultiContinuity(indexList);
-    }
+        Optional<ArrayList<int[]>> listOfIndices = Optional.of(new ArrayList<int[]>());
 
-    private SwingData ModelSwingData(String[] data){
-        long time = Long.parseLong(data[0]);
-        float ax = Float.parseFloat(data[1]);
-        float ay = Float.parseFloat(data[2]);
-        float az = Float.parseFloat(data[3]);
-        float wx = Float.parseFloat(data[4]);
-        float wy = Float.parseFloat(data[5]);
-        float wz = Float.parseFloat(data[6]);
+        int rowCounter = 0;
+        boolean winLengthMet = false;
+        int firstIndex = 0;
+        int lastIndex = 0;
 
-        return new SwingData(time, ax, ay, az, wx, wy, wz);
-    }
-
-    private ArrayList<Float> addSwingDataToList(LinkedList<SwingData> allOfTheSwingData, int index){
-        ArrayList<Float> swingParameters = new ArrayList<Float>();
-        SwingData data = allOfTheSwingData.get(index);
-        swingParameters.add(data.getAx());
-        swingParameters.add(data.getAy());
-        swingParameters.add(data.getAz());
-        swingParameters.add(data.getWx());
-        swingParameters.add(data.getWy());
-        swingParameters.add(data.getWz());
-
-        return swingParameters;
-    }
-
-    private ArrayList<Integer> makeListOfIndicesThatMeetConditions(LinkedList<SwingData> allTheSwingData, int indexBegin, int indexEnd, float thresholdHi, float thresholdLow, int winLength){
-
-        int thresholdsMetCounter = 0;
-        ArrayList<Integer>indexList = new ArrayList<>();
         for(int i = indexBegin; i <= indexEnd; i++){
-            ArrayList<Float> swingParameters = addSwingDataToList(allTheSwingData, i);
-            for(Float swingParameter : swingParameters){
-                if (swingParameter > thresholdLow && swingParameter < thresholdHi){
-                    thresholdsMetCounter++;
-                    if (thresholdsMetCounter >= winLength){
-                        indexList.add(i);
-                        break;
+
+            float dataPoint = columnData.get(i);
+
+            if (dataPoint > thresholdLow && dataPoint < thresholdHi){               //Data is within thresholds
+                rowCounter++;
+                if(rowCounter >= winLength) {
+
+                    winLengthMet = true;
+                    firstIndex = i - rowCounter + 1;
+                    lastIndex = i;
+
+                    if(i == indexEnd){                                              //last item of data on the list
+                        listOfIndices.get().add(new int[]{firstIndex, lastIndex});
                     }
                 }
-            }
-            thresholdsMetCounter = 0;
-        }
-
-        return indexList;
-    }
-
-    private int[] checkListOfIndicesForMultiContinuity(ArrayList<Integer> indexList){
-        int[] indices = new int[2];
-        int consecutiveRows = 1;
-        int largestNumberOfContinuousIndicesSoFar = 0;
-        int indexLast = 0;
-
-        if (indexList.size() == 1){
-            indices[0] = indexList.get(0);
-            indices[1] = indexList.get(0);
-            return indices;
-        } else if (indexList.size() == 0){                          //if index list is size 0 condition never met
-            return new int[0];
-        } else {
-            for(int i = 0; i < indexList.size() -1; i++){
-                if(indexList.get(i) == indexList.get(i + 1) - 1){
-                    consecutiveRows++;
-                    if (consecutiveRows > largestNumberOfContinuousIndicesSoFar){
-                        largestNumberOfContinuousIndicesSoFar = consecutiveRows;
-                        indexLast = indexList.get(i + 1);
-                    }
-                } else {
-                    consecutiveRows = 1;
+            } else if (!(dataPoint > thresholdLow && dataPoint < thresholdHi)){     //Data is not within thresholds
+                if(winLengthMet){
+                    lastIndex = i  - 1;
+                    listOfIndices.get().add(new int[]{firstIndex, lastIndex});
                 }
+                rowCounter = 0;
+                winLengthMet = false;
             }
         }
-        int indexFirst = (indexLast - largestNumberOfContinuousIndicesSoFar) + 1;
-        indices[0] = indexFirst;
-        indices[1] = indexLast;
-        return indices;
+
+        return listOfIndices;
     }
 
+    private void populateSwingData(String[] data, int index){
+        axData.put(index, Float.parseFloat(data[1]));
+        ayData.put(index, Float.parseFloat(data[2]));
+        azData.put(index, Float.parseFloat(data[3]));
+        wxData.put(index, Float.parseFloat(data[4]));
+        wyData.put(index, Float.parseFloat(data[5]));
+        wzData.put(index, Float.parseFloat(data[6]));
+    }
+
+    private HashMap<Integer, Float> getColumnData(String columnName){
+        HashMap<Integer, Float> nullHashMap = new HashMap<Integer, Float>();
+        switch(columnName.toLowerCase()){
+            case ("ax"):
+                return axData;
+            case ("ay"):
+                return ayData;
+            case ("az"):
+                return azData;
+            case ("wx"):
+                return wxData;
+            case ("wy"):
+                return wyData;
+            case ("wz"):
+                return wzData;
+            default:
+                return nullHashMap;
+        }
+    }
 }

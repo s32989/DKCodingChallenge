@@ -1,37 +1,42 @@
 package com.dkchallenge.springboot.controller.request;
 
-public class BackSearchContinuityWithinRangeRequest {
-    private int indexBegin;
-    private int indexEnd;
-    private float thresholdHi;
-    private float thresholdLow;
-    private int winLength;
+import java.util.HashMap;
 
-    public BackSearchContinuityWithinRangeRequest(int indexBegin, int indexEnd, float thresholdHi, float thresholdLow, int winLength) {
-        this.indexBegin = indexBegin;
-        this.indexEnd = indexEnd;
-        this.thresholdHi = thresholdHi;
-        this.thresholdLow = thresholdLow;
-        this.winLength = winLength;
+public class BackSearchContinuityWithinRangeRequest extends SearchRequest {
+
+    private final HashMap<String, Float> thresholds;
+    private final HashMap<String, String> columns;
+
+    public BackSearchContinuityWithinRangeRequest(int indexBegin, int indexEnd, int winLength, HashMap<String, Float> thresholds, HashMap<String, String> columns) {
+        super(indexBegin, indexEnd, winLength);
+        this.thresholds = thresholds;
+        this.columns = columns;
     }
 
+    @Override
     public int getIndexBegin() {
-        return indexBegin;
+        return super.getIndexBegin();
     }
 
+    @Override
     public int getIndexEnd() {
-        return indexEnd;
+        return super.getIndexEnd();
     }
 
-    public float getThresholdHi() {
-        return thresholdHi;
-    }
-
-    public float getThresholdLow() {
-        return thresholdLow;
-    }
-
+    @Override
     public int getWinLength() {
-        return winLength;
+        return super.getWinLength();
+    }
+
+    public float getThresholdHi(){
+        return thresholds.get("thresholdHi");
+    }
+
+    public float getThresholdLow(){
+        return thresholds.get("thresholdLow");
+    }
+
+    public String getColumnName(){
+        return columns.get("column1");
     }
 }
