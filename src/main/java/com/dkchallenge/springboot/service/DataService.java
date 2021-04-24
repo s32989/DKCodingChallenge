@@ -1,5 +1,8 @@
 package com.dkchallenge.springboot.service;
 
+import com.dkchallenge.springboot.constants.searchFunctions;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.io.*;
@@ -56,19 +59,41 @@ public class DataService {
             }
         }
         catch (IOException e) {
-            e.printStackTrace();
+            Logger logger  = LoggerFactory.getLogger(DataService.class);
+            logger.error("Could not find file");
         }
     }
 
-    public Optional<Integer> returnIndexOfContinuityAboveValue(String columnName, int indexBegin, int indexEnd, float threshold, int winLength){
+    public Optional<?> searchData(String searchFunction, HashMap<String, String> columns, int indexBegin, int indexEnd, HashMap<String, Float> thresholds, int winLength){
 
-        HashMap<Integer, Float> columnData = getColumnData(columnName);
+        Optional<?> data;
+        switch(searchFunction){
+            case searchFunctions.searchContinuityAboveValue:
+                data = returnIndexOfContinuityAboveValue(getColumnData(columns.get("column1")), indexBegin, indexEnd, thresholds.get("threshold"), winLength);
+                break;
+            case searchFunctions.backSearchContinuityWithinRange:
+                data = returnIndexOfContinuityWithinRange(getColumnData(columns.get("column1")), indexBegin, indexEnd, thresholds.get("thresholdHi"), thresholds.get("thresholdLow"), winLength);
+                break;
+            case searchFunctions.searchContinuityAboveValueTwoSignals:
+                data = returnIndexOfDataWithinBothThresholds(getColumnData(columns.get("column1")),getColumnData(columns.get("column2")), indexBegin, indexEnd, thresholds.get("threshold1"), thresholds.get("threshold2"), winLength);
+                break;
+            case searchFunctions.searchMultiContinuityWithinRange:
+                data = returnIndicesWithinRange(getColumnData(columns.get("column1")), indexBegin, indexEnd, thresholds.get("thresholdHi"), thresholds.get("thresholdLow"), winLength);
+                break;
+            default:
+                data = Optional.empty();
+                break;
+        }
+        return data;
+    }
+
+    public Optional<Integer> returnIndexOfContinuityAboveValue(HashMap<Integer, Float> columnData, int indexBegin, int indexEnd, float threshold, int winLength){
 
         Optional<Integer> index = Optional.empty();
 
         int counter = 0;
 
-        for( int i = indexBegin; i <= indexEnd; i++){
+        for (int i = indexBegin; i <= indexEnd; i++){
 
             float dataPoint = columnData.get(i);
 
@@ -78,16 +103,14 @@ public class DataService {
                     index = Optional.of(i - winLength + 1);
                     return index;
                 }
-            }else{
+            } else {
                 counter = 0;
             }
         }
         return index;
     }
 
-    public Optional<Integer> returnIndexOfContinuityWithinRange(String columnName, int indexBegin, int indexEnd, float thresholdHi, float thresholdLow, int winLength){
-
-        HashMap<Integer, Float> columnData = getColumnData(columnName);
+    public Optional<Integer> returnIndexOfContinuityWithinRange(HashMap<Integer, Float> columnData, int indexBegin, int indexEnd, float thresholdHi, float thresholdLow, int winLength){
 
         Optional<Integer> index = Optional.empty();
         int counter = 0;
@@ -102,40 +125,37 @@ public class DataService {
                     index = Optional.of(i - winLength + 1);
                     return index;
                 }
-            }else{
+            } else {
                 counter = 0;
             }
         }
 
         return index;
     }
-    public Optional<Integer> returnIndexOfDataWithinBothThresholds(String column1Name, String column2Name, int indexBegin, int indexEnd, float threshold1, float threshold2, int winLength){
-
-        HashMap<Integer, Float> column1Data = getColumnData(column1Name);
-        HashMap<Integer, Float> column2Data = getColumnData(column2Name);
+    public Optional<Integer> returnIndexOfDataWithinBothThresholds(HashMap<Integer, Float> column1Data, HashMap<Integer, Float> column2Data, int indexBegin, int indexEnd, float threshold1, float threshold2, int winLength){
 
         Optional<Integer> index = Optional.empty();
         int counter1 = 0;
         int counter2 = 0;
 
-        for(int i = indexBegin; i <= indexEnd; i++){
+        for (int i = indexBegin; i <= indexEnd; i++){
 
             float dataPoint1 = column1Data.get(i);
             float dataPoint2 = column2Data.get(i);
 
-            if(dataPoint1 > threshold1){
+            if (dataPoint1 > threshold1){
                 counter1++;
             } else {
                 counter1 = 0;
             }
 
-            if(dataPoint2 > threshold2){
+            if (dataPoint2 > threshold2){
                 counter2++;
             } else {
                 counter2 = 0;
             }
 
-            if(counter1 >= winLength && counter2 >= winLength){
+            if (counter1 >= winLength && counter2 >= winLength){
                 index = Optional.of(i - winLength + 1);
                 return index;
             }
@@ -144,9 +164,7 @@ public class DataService {
         return index;
     }
 
-    public Optional<ArrayList<int[]>> returnIndicesWithinRange(String columnName, int indexBegin, int indexEnd, float thresholdHi, float thresholdLow, int winLength){
-
-        HashMap<Integer, Float> columnData = getColumnData(columnName);
+    public Optional<ArrayList<int[]>> returnIndicesWithinRange(HashMap<Integer, Float> columnData, int indexBegin, int indexEnd, float thresholdHi, float thresholdLow, int winLength){
 
         Optional<ArrayList<int[]>> listOfIndices = Optional.of(new ArrayList<int[]>());
 
@@ -172,7 +190,7 @@ public class DataService {
                     }
                 }
             } else if (!(dataPoint > thresholdLow && dataPoint < thresholdHi)){     //Data is not within thresholds
-                if(winLengthMet){
+                if (winLengthMet){
                     lastIndex = i  - 1;
                     listOfIndices.get().add(new int[]{firstIndex, lastIndex});
                 }
@@ -194,22 +212,29 @@ public class DataService {
     }
 
     private HashMap<Integer, Float> getColumnData(String columnName){
-        HashMap<Integer, Float> nullHashMap = new HashMap<Integer, Float>();
+        HashMap<Integer, Float> columnData;
         switch(columnName.toLowerCase()){
             case ("ax"):
-                return axData;
+                columnData = axData;
+                break;
             case ("ay"):
-                return ayData;
+                columnData = ayData;
+                break;
             case ("az"):
-                return azData;
+                columnData = azData;
+                break;
             case ("wx"):
-                return wxData;
+                columnData = wxData;
+                break;
             case ("wy"):
-                return wyData;
+                columnData = wyData;
+                break;
             case ("wz"):
-                return wzData;
+                columnData = wzData;
+                break;
             default:
-                return nullHashMap;
+                columnData = null;
         }
+        return columnData;
     }
 }
