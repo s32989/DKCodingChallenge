@@ -18,6 +18,29 @@ public class DataService {
     private HashMap<Integer, Float> wyData = new HashMap<Integer, Float>();
     private HashMap<Integer, Float> wzData = new HashMap<Integer, Float>();
 
+    public HashMap<Integer, Float> getAxData() {
+        return axData;
+    }
+
+    public HashMap<Integer, Float> getAyData() {
+        return ayData;
+    }
+
+    public HashMap<Integer, Float> getAzData() {
+        return azData;
+    }
+
+    public HashMap<Integer, Float> getWxData() {
+        return wxData;
+    }
+
+    public HashMap<Integer, Float> getWyData() {
+        return wyData;
+    }
+
+    public HashMap<Integer, Float> getWzData() {
+        return wzData;
+    }
 
     public HashMap<Integer,SwingData> getData(String fileName){
         HashMap<Integer, SwingData> swingDataHashMap = new HashMap<Integer, SwingData>();
@@ -51,7 +74,8 @@ public class DataService {
             if (dataPoint > threshold){
                 counter++;
                 if (counter == winLength){
-                    return index = Optional.of(i - winLength);
+                    index = Optional.of(i - winLength + 1);
+                    return index;
                 }
             }else{
                 counter = 0;
@@ -70,7 +94,8 @@ public class DataService {
             if (dataPoint > thresholdLow && dataPoint < thresholdHi){
                 counter++;
                 if (counter == winLength){
-                    return index = Optional.of(i - winLength);
+                    index = Optional.of(i - winLength + 1);
+                    return index;
                 }
             }else{
                 counter = 0;
@@ -102,7 +127,7 @@ public class DataService {
             }
 
             if(counter1 >= winLength && counter2 >= winLength){
-                index = Optional.of(i - winLength);
+                index = Optional.of(i - winLength + 1);
                 return index;
             }
         }
@@ -112,41 +137,40 @@ public class DataService {
 
     public ArrayList<int[]> returnIndicesWithinRange(HashMap<Integer, Float> swingData, int indexBegin, int indexEnd, float thresholdHi, float thresholdLow, int winLength){
 
-        int counter = 0;
+        ArrayList<int[]> indicesWithinRange = new ArrayList<int[]>();
+
+        int rowCounter = 0;
+        boolean winLengthMet = false;
         int firstIndex = 0;
         int lastIndex = 0;
-        ArrayList<int[]> indicesOfContinuity = new ArrayList<int[]>();
-        boolean winLengthConditionsMet = false;
 
-        for( int i = indexBegin; i <= indexEnd; i++){
+        for(int i = indexBegin; i <= indexEnd; i++){
 
             float dataPoint = swingData.get(i);
 
             if (dataPoint > thresholdLow && dataPoint < thresholdHi){
+                rowCounter++;
+                if(rowCounter >= winLength) {
 
-                counter++;
-
-                if(counter >= winLength){
-
-                    winLengthConditionsMet = true;
-                    firstIndex = i - counter;
+                    winLengthMet = true;
+                    firstIndex = i - rowCounter + 1;
                     lastIndex = i;
+
+                    if(i == indexEnd){
+                        indicesWithinRange.add(new int[]{firstIndex, lastIndex});
+                    }
                 }
-
-            }else if(dataPoint < thresholdLow || dataPoint > thresholdHi && winLengthConditionsMet){
-
-                int[] indices = new int[]{firstIndex, lastIndex - 1};
-                indicesOfContinuity.add(indices);
-                winLengthConditionsMet =  false;
-                counter = 0;
-
-            }else{
-                counter = 0;
+            } else if (!(dataPoint > thresholdLow && dataPoint < thresholdHi)){
+                if(winLengthMet){
+                    lastIndex = i  - 1;
+                    indicesWithinRange.add(new int[]{firstIndex, lastIndex});
+                }
+                rowCounter = 0;
+                winLengthMet = false;
             }
-
-
         }
-        return indicesOfContinuity;
+        
+        return indicesWithinRange;
     }
 
     private void populateSwingData(String[] data, int index){

@@ -7,6 +7,10 @@ import com.dkchallenge.springboot.service.DataService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
+import java.util.Optional;
+import java.util.Set;
+
 
 @RestController
 public class DKChallengeController {
@@ -15,23 +19,27 @@ public class DKChallengeController {
     DataService dataService;
 
     @GetMapping("/searchContinuityAboveValue")
-    public Integer searchContinuityAboveValue(@RequestBody SearchContinuityAboveValueRequest request) {
-        return dataService.returnIndexOfContinuityAboveValue(dataService.getData("latestSwing.csv"), request.getIndexBegin(), request.getIndexEnd(), request.getThreshold(), request.getWinLength());
+    public Optional<Integer> searchContinuityAboveValue(@RequestBody SearchContinuityAboveValueRequest request) {
+        dataService.getData("latestSwing.csv");
+        return dataService.returnIndexOfContinuityAboveValue(dataService.getAxData(), request.getIndexBegin(), request.getIndexEnd(), request.getThreshold(), request.getWinLength());
     }
 
     @GetMapping("/backSearchContinuityWithinRange")
-    public Integer backSearchContinuityWithinRange(@RequestBody BackSearchContinuityWithinRangeRequest request){
-        return dataService.returnIndexOfContinuityWithinRange(dataService.getData("latestSwing.csv"), request.getIndexBegin(), request.getIndexEnd(), request.getThresholdHi(), request.getThresholdLow(), request.getWinLength());
+    public Optional<Integer> backSearchContinuityWithinRange(@RequestBody BackSearchContinuityWithinRangeRequest request){
+        dataService.getData("latestSwing.csv");
+        return dataService.returnIndexOfContinuityWithinRange(dataService.getAxData(), request.getIndexBegin(), request.getIndexEnd(), request.getThresholdHi(), request.getThresholdLow(), request.getWinLength());
     }
 
     @GetMapping("/searchContinuityAboveValueTwoSignals")
-    public Integer searchContinuityAboveValueTwoSignals(@RequestBody SearchContinuityAboveValueTwoSignalsRequest request){
-        return dataService.returnIndexOfDataWithinBothThresholds(dataService.getData("latestSwing.csv"), dataService.getData("swingData2.csv"), request.getIndexBegin(), request.getIndexEnd(), request.getThreshold1(), request.getThreshold2(), request.getWinLength());
+    public Optional<Integer> searchContinuityAboveValueTwoSignals(@RequestBody SearchContinuityAboveValueTwoSignalsRequest request){
+        dataService.getData("latestSwing.csv");
+        return dataService.returnIndexOfDataWithinBothThresholds(dataService.getAxData(), dataService.getAyData(), request.getIndexBegin(), request.getIndexEnd(), request.getThreshold1(), request.getThreshold2(), request.getWinLength());
     }
 
     @GetMapping("/searchMultiContinuityWithinRange")
-    public int[] searchMultiContinuityWithinRange(@RequestBody SearchMultiContinuityWithinRangeRequest request){
-        return dataService.returnIndicesWithinRange(dataService.getData("latestSwing.csv"), request.getIndexBegin(), request.getIndexEnd(), request.getThresholdHi(), request.getThresholdLow(), request.getWinLength());
+    public ArrayList<int[]> searchMultiContinuityWithinRange(@RequestBody SearchMultiContinuityWithinRangeRequest request){
+        dataService.getData("latestSwing.csv");
+        return dataService.returnIndicesWithinRange(dataService.getAxData(), request.getIndexBegin(), request.getIndexEnd(), request.getThresholdHi(), request.getThresholdLow(), request.getWinLength());
     }
 
 }
