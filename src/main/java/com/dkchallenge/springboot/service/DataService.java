@@ -194,7 +194,7 @@ public class DataService {
     }
 
     private HashMap<Integer, Float> getColumnData(String columnName){
-
+        HashMap<Integer, Float> nullHashMap = new HashMap<Integer, Float>();
         switch(columnName.toLowerCase()){
             case ("ax"):
                 return axData;
@@ -209,7 +209,7 @@ public class DataService {
             case ("wz"):
                 return wzData;
             default:
-                return null;
+                return nullHashMap;
         }
     }
 }
