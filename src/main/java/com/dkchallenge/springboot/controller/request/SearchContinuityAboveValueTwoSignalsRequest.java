@@ -1,38 +1,46 @@
 package com.dkchallenge.springboot.controller.request;
 
-public class SearchContinuityAboveValueTwoSignalsRequest {
+import java.util.HashMap;
 
-    private int indexBegin;
-    private int indexEnd;
-    private float threshold1;
-    private float threshold2;
-    private int winLength;
+public class SearchContinuityAboveValueTwoSignalsRequest extends SearchRequest{
 
-    public SearchContinuityAboveValueTwoSignalsRequest(int indexBegin, int indexEnd, float threshold1, float threshold2, int winLength) {
-        this.indexBegin = indexBegin;
-        this.indexEnd = indexEnd;
-        this.threshold1 = threshold1;
-        this.threshold2 = threshold2;
-        this.winLength = winLength;
+    private final HashMap<String, Float> thresholds;
+    private final HashMap<String, String> columns;
+
+    public SearchContinuityAboveValueTwoSignalsRequest(int indexBegin, int indexEnd, int winLength, HashMap<String, Float> thresholds, HashMap<String, String> columns) {
+        super(indexBegin, indexEnd, winLength);
+        this.columns = columns;
+        this.thresholds = thresholds;
     }
 
+    @Override
     public int getIndexBegin() {
-        return indexBegin;
+        return super.getIndexBegin();
     }
 
+    @Override
     public int getIndexEnd() {
-        return indexEnd;
+        return super.getIndexEnd();
     }
 
-    public float getThreshold1() {
-        return threshold1;
-    }
-
-    public float getThreshold2() {
-        return threshold2;
-    }
-
+    @Override
     public int getWinLength() {
-        return winLength;
+        return super.getWinLength();
+    }
+
+    public String getColumn1Name(){
+        return columns.get("column1");
+    }
+
+    public String getColumn2Name(){
+        return columns.get("column2");
+    }
+
+    public float getThreshold1(){
+        return thresholds.get("threshold1");
+    }
+
+    public float getThreshold2(){
+        return thresholds.get("threshold2");
     }
 }

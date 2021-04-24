@@ -1,11 +1,8 @@
 package com.dkchallenge.springboot.service;
 
-import com.dkchallenge.springboot.model.SwingData;
 import org.springframework.stereotype.Service;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 import java.util.*;
 
 @Service
@@ -17,6 +14,10 @@ public class DataService {
     private HashMap<Integer, Float> wxData = new HashMap<Integer, Float>();
     private HashMap<Integer, Float> wyData = new HashMap<Integer, Float>();
     private HashMap<Integer, Float> wzData = new HashMap<Integer, Float>();
+
+    public DataService() {
+        this.getData();
+    }
 
     public HashMap<Integer, Float> getAxData() {
         return axData;
@@ -42,12 +43,11 @@ public class DataService {
         return wzData;
     }
 
-    public HashMap<Integer,SwingData> getData(String fileName){
-        HashMap<Integer, SwingData> swingDataHashMap = new HashMap<Integer, SwingData>();
+    private void getData() {
         String line = "";
         int index = 0;
 
-        try (BufferedReader br = new BufferedReader(new FileReader(fileName))){
+        try (BufferedReader br = new BufferedReader(new FileReader("latestSwing.csv"))){
             while ((line = br.readLine()) != null)
             {
                 String[] swingDataSplit = line.split(",");
@@ -58,18 +58,19 @@ public class DataService {
         catch (IOException e) {
             e.printStackTrace();
         }
-
-        return swingDataHashMap;
     }
 
-    public Optional<Integer> returnIndexOfContinuityAboveValue(HashMap<Integer,Float> swingData, int indexBegin, int indexEnd, float threshold, int winLength){
+    public Optional<Integer> returnIndexOfContinuityAboveValue(String columnName, int indexBegin, int indexEnd, float threshold, int winLength){
+
+        HashMap<Integer, Float> columnData = getColumnData(columnName);
 
         Optional<Integer> index = Optional.empty();
+
         int counter = 0;
 
         for( int i = indexBegin; i <= indexEnd; i++){
 
-            float dataPoint = swingData.get(i);
+            float dataPoint = columnData.get(i);
 
             if (dataPoint > threshold){
                 counter++;
@@ -84,12 +85,16 @@ public class DataService {
         return index;
     }
 
-    public Optional<Integer> returnIndexOfContinuityWithinRange(HashMap<Integer, Float> swingData, int indexBegin, int indexEnd, float thresholdHi, float thresholdLow, int winLength){
+    public Optional<Integer> returnIndexOfContinuityWithinRange(String columnName, int indexBegin, int indexEnd, float thresholdHi, float thresholdLow, int winLength){
+
+        HashMap<Integer, Float> columnData = getColumnData(columnName);
+
         Optional<Integer> index = Optional.empty();
         int counter = 0;
+
         for(int i = indexBegin; i >= indexEnd; i--){
 
-            float dataPoint = swingData.get(i);
+            float dataPoint = columnData.get(i);
 
             if (dataPoint > thresholdLow && dataPoint < thresholdHi){
                 counter++;
@@ -104,15 +109,19 @@ public class DataService {
 
         return index;
     }
-    public Optional<Integer> returnIndexOfDataWithinBothThresholds(HashMap<Integer, Float> swingData1, HashMap<Integer, Float> swingData2, int indexBegin, int indexEnd, float threshold1, float threshold2, int winLength){
+    public Optional<Integer> returnIndexOfDataWithinBothThresholds(String column1Name, String column2Name, int indexBegin, int indexEnd, float threshold1, float threshold2, int winLength){
+
+        HashMap<Integer, Float> column1Data = getColumnData(column1Name);
+        HashMap<Integer, Float> column2Data = getColumnData(column2Name);
 
         Optional<Integer> index = Optional.empty();
         int counter1 = 0;
         int counter2 = 0;
 
         for(int i = indexBegin; i <= indexEnd; i++){
-            float dataPoint1 = swingData1.get(i);
-            float dataPoint2 = swingData2.get(i);
+
+            float dataPoint1 = column1Data.get(i);
+            float dataPoint2 = column2Data.get(i);
 
             if(dataPoint1 > threshold1){
                 counter1++;
@@ -135,9 +144,11 @@ public class DataService {
         return index;
     }
 
-    public ArrayList<int[]> returnIndicesWithinRange(HashMap<Integer, Float> swingData, int indexBegin, int indexEnd, float thresholdHi, float thresholdLow, int winLength){
+    public Optional<ArrayList<int[]>> returnIndicesWithinRange(String columnName, int indexBegin, int indexEnd, float thresholdHi, float thresholdLow, int winLength){
 
-        ArrayList<int[]> indicesWithinRange = new ArrayList<int[]>();
+        HashMap<Integer, Float> columnData = getColumnData(columnName);
+
+        Optional<ArrayList<int[]>> listOfIndices = Optional.of(new ArrayList<int[]>());
 
         int rowCounter = 0;
         boolean winLengthMet = false;
@@ -146,9 +157,9 @@ public class DataService {
 
         for(int i = indexBegin; i <= indexEnd; i++){
 
-            float dataPoint = swingData.get(i);
+            float dataPoint = columnData.get(i);
 
-            if (dataPoint > thresholdLow && dataPoint < thresholdHi){
+            if (dataPoint > thresholdLow && dataPoint < thresholdHi){               //Data is within thresholds
                 rowCounter++;
                 if(rowCounter >= winLength) {
 
@@ -156,21 +167,21 @@ public class DataService {
                     firstIndex = i - rowCounter + 1;
                     lastIndex = i;
 
-                    if(i == indexEnd){
-                        indicesWithinRange.add(new int[]{firstIndex, lastIndex});
+                    if(i == indexEnd){                                              //last item of data on the list
+                        listOfIndices.get().add(new int[]{firstIndex, lastIndex});
                     }
                 }
-            } else if (!(dataPoint > thresholdLow && dataPoint < thresholdHi)){
+            } else if (!(dataPoint > thresholdLow && dataPoint < thresholdHi)){     //Data is not within thresholds
                 if(winLengthMet){
                     lastIndex = i  - 1;
-                    indicesWithinRange.add(new int[]{firstIndex, lastIndex});
+                    listOfIndices.get().add(new int[]{firstIndex, lastIndex});
                 }
                 rowCounter = 0;
                 winLengthMet = false;
             }
         }
-        
-        return indicesWithinRange;
+
+        return listOfIndices;
     }
 
     private void populateSwingData(String[] data, int index){
@@ -180,5 +191,25 @@ public class DataService {
         wxData.put(index, Float.parseFloat(data[4]));
         wyData.put(index, Float.parseFloat(data[5]));
         wzData.put(index, Float.parseFloat(data[6]));
+    }
+
+    private HashMap<Integer, Float> getColumnData(String columnName){
+
+        switch(columnName.toLowerCase()){
+            case ("ax"):
+                return axData;
+            case ("ay"):
+                return ayData;
+            case ("az"):
+                return azData;
+            case ("wx"):
+                return wxData;
+            case ("wy"):
+                return wyData;
+            case ("wz"):
+                return wzData;
+            default:
+                return null;
+        }
     }
 }

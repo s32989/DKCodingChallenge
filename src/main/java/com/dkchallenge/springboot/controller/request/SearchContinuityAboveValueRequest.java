@@ -1,32 +1,38 @@
 package com.dkchallenge.springboot.controller.request;
 
-public class SearchContinuityAboveValueRequest {
+import java.util.HashMap;
 
-    private int indexBegin;
-    private int indexEnd;
-    private float threshold;
-    private int winLength;
+public class SearchContinuityAboveValueRequest extends SearchRequest{
 
-    public SearchContinuityAboveValueRequest(int indexBegin, int indexEnd, float threshold, int winLength) {
-        this.indexBegin = indexBegin;
-        this.indexEnd = indexEnd;
-        this.threshold = threshold;
-        this.winLength = winLength;
+    private final HashMap<String, Float> thresholds;
+    private final HashMap<String, String> columns;
+
+    public SearchContinuityAboveValueRequest(int indexBegin, int indexEnd, int winLength, HashMap<String, Float> thresholds, HashMap<String, String> columns) {
+        super(indexBegin, indexEnd, winLength);
+        this.thresholds = thresholds;
+        this.columns = columns;
     }
 
+    @Override
     public int getIndexBegin() {
-        return indexBegin;
+        return super.getIndexBegin();
     }
 
+    @Override
     public int getIndexEnd() {
-        return indexEnd;
+        return super.getIndexEnd();
     }
 
-    public float getThreshold() {
-        return threshold;
-    }
-
+    @Override
     public int getWinLength() {
-        return winLength;
+        return super.getWinLength();
+    }
+
+    public float getThreshold(){
+        return thresholds.get("threshold");
+    }
+
+    public String getColumnName(){
+        return columns.get("column1");
     }
 }
