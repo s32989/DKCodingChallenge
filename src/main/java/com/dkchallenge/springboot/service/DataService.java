@@ -1,6 +1,6 @@
 package com.dkchallenge.springboot.service;
 
-import com.dkchallenge.springboot.constants.searchFunctions;
+import com.dkchallenge.springboot.constants.SearchFunctions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -18,8 +18,12 @@ public class DataService {
     private HashMap<Integer, Float> wyData = new HashMap<Integer, Float>();
     private HashMap<Integer, Float> wzData = new HashMap<Integer, Float>();
 
-    public DataService() {
-        this.getData();
+
+    public DataService(String fileName) {
+        this.getData(fileName);
+    }
+    public DataService(){
+        this.getData("latestSwing.csv");
     }
 
     public HashMap<Integer, Float> getAxData() {
@@ -46,11 +50,11 @@ public class DataService {
         return wzData;
     }
 
-    private void getData() {
+    private void getData(String fileName) {
         String line = "";
         int index = 0;
 
-        try (BufferedReader br = new BufferedReader(new FileReader("latestSwing.csv"))){
+        try (BufferedReader br = new BufferedReader(new FileReader(fileName))){
             while ((line = br.readLine()) != null)
             {
                 String[] swingDataSplit = line.split(",");
@@ -68,17 +72,17 @@ public class DataService {
 
         Optional<?> data;
         switch(searchFunction){
-            case searchFunctions.searchContinuityAboveValue:
+            case SearchFunctions.searchContinuityAboveValue:
                 data = returnIndexOfContinuityAboveValue(getColumnData(columns.get("column1")), indexBegin, indexEnd, thresholds.get("threshold"), winLength);
                 break;
-            case searchFunctions.backSearchContinuityWithinRange:
+            case SearchFunctions.backSearchContinuityWithinRange:
                 data = returnIndexOfContinuityWithinRange(getColumnData(columns.get("column1")), indexBegin, indexEnd, thresholds.get("thresholdHi"), thresholds.get("thresholdLow"), winLength);
                 break;
-            case searchFunctions.searchContinuityAboveValueTwoSignals:
+            case SearchFunctions.searchContinuityAboveValueTwoSignals:
                 data = returnIndexOfDataWithinBothThresholds(getColumnData(columns.get("column1")),getColumnData(columns.get("column2")), indexBegin, indexEnd, thresholds.get("threshold1"), thresholds.get("threshold2"), winLength);
                 break;
-            case searchFunctions.searchMultiContinuityWithinRange:
-                data = returnIndicesWithinRange(getColumnData(columns.get("column1")), indexBegin, indexEnd, thresholds.get("thresholdHi"), thresholds.get("thresholdLow"), winLength);
+            case SearchFunctions.searchMultiContinuityWithinRange:
+                data = returnAllIndicesWithinRange(getColumnData(columns.get("column1")), indexBegin, indexEnd, thresholds.get("thresholdHi"), thresholds.get("thresholdLow"), winLength);
                 break;
             default:
                 data = Optional.empty();
@@ -164,14 +168,15 @@ public class DataService {
         return index;
     }
 
-    public Optional<ArrayList<int[]>> returnIndicesWithinRange(HashMap<Integer, Float> columnData, int indexBegin, int indexEnd, float thresholdHi, float thresholdLow, int winLength){
 
-        Optional<ArrayList<int[]>> listOfIndices = Optional.of(new ArrayList<int[]>());
+    public Optional<ArrayList<int[]>> returnAllIndicesWithinRange(HashMap<Integer, Float> columnData, int indexBegin, int indexEnd, float thresholdHi, float thresholdLow, int winLength){
+
+        Optional<ArrayList<int[]>> listOfIndices = Optional.of(new ArrayList<>());
 
         int rowCounter = 0;
         boolean winLengthMet = false;
         int firstIndex = 0;
-        int lastIndex = 0;
+        int lastIndex;
 
         for(int i = indexBegin; i <= indexEnd; i++){
 
