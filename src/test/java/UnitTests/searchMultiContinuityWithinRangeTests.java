@@ -1,6 +1,5 @@
 package UnitTests;
 
-
 import com.dkchallenge.springboot.service.DataService;
 import java.util.ArrayList;
 import java.util.Optional;
@@ -21,18 +20,17 @@ public class searchMultiContinuityWithinRangeTests {
     }
 
     @org.junit.Test
-    public void testDataServicesearchMultiContinuityWithinRangeArrayListNotPresent(){
-        Optional<ArrayList<int[]>> shouldNotBePresent = dataService.returnAllIndicesWithinRange(dataService.getWzData(), 0, 9,(float)100,(float) 99,1);
-        assertFalse(shouldNotBePresent.get().isEmpty());
+    public void testDataServicesearchMultiContinuityWithinRangeArrayListIsEmpty(){
+        Optional<ArrayList<int[]>> shouldNotBePresent = dataService.returnAllIndicesWithinRange(dataService.getWzData(), 0, 9,(float)100,(float) 99,2);
+        assertTrue(shouldNotBePresent.get().isEmpty());
     }
-//
-//    @org.junit.Test
-//    public void searchMultiContinuityWithinRangeOneRowResult(){
-//        LinkedList<SwingData> data = dataService.getData("testCSVS/searchMultiContinuityWithinRangeTests.csv");
-//        int[] shouldBeginAndEndSameIndex = dataService.returnIndicesWithinRange(data,0,8,(float)1.1,(float)0.9,1);
-//        int[] correctIndices = {1,1};
-//        assertArrayEquals(correctIndices, shouldBeginAndEndSameIndex);
-//    }
+
+    @org.junit.Test
+    public void searchMultiContinuityWithinRangeOneRowResultLastRowOfData(){
+        Optional<ArrayList<int[]>> shouldBeNineToNine = dataService.returnAllIndicesWithinRange(dataService.getWzData(), 0, 9,(float)4.1,(float) 3.9,1);
+        int[] NineToNine = {9,9};
+        assertArrayEquals(NineToNine, shouldBeNineToNine.get().get(0));
+    }
 
 
 }
