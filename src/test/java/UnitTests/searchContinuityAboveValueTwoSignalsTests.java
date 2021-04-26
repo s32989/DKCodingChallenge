@@ -1,10 +1,7 @@
 package UnitTests;
 
-
 import com.dkchallenge.springboot.service.DataService;
-
 import java.util.Optional;
-
 import static org.junit.Assert.*;
 
 public class searchContinuityAboveValueTwoSignalsTests {
@@ -14,7 +11,7 @@ public class searchContinuityAboveValueTwoSignalsTests {
     @org.junit.Test
     public void testDataServiceSearchContinuityAboveValueTwoSignalsSuccess(){
         Optional<Integer> shouldEqualThree = dataService.returnIndexOfDataWithinBothThresholds(dataService.getAzData(), dataService.getWyData(),0,5, (float)2,(float)1.9,2);
-        assertEquals(3, shouldEqualThree.get().intValue());
+        shouldEqualThree.ifPresent(integer -> assertEquals(3, integer.intValue()));
     }
 
     @org.junit.Test

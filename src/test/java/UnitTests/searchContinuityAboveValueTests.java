@@ -12,7 +12,7 @@ public class searchContinuityAboveValueTests {
     @org.junit.Test
     public void testDataServiceReturnIndexOfContinuityAboveValueSuccess(){
         Optional<Integer> shouldEqualTwo = dataService.returnIndexOfContinuityAboveValue(dataService.getAxData(),0, 5, (float) 1.9,2);
-        assertEquals(2, shouldEqualTwo.get().intValue());
+        shouldEqualTwo.ifPresent(integer -> assertEquals(2, integer.intValue()));
     }
 
     @org.junit.Test

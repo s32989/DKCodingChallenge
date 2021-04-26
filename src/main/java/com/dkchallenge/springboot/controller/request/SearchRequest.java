@@ -6,8 +6,8 @@ public class SearchRequest {
     private final int indexBegin;
     private final int indexEnd;
     private final int winLength;
-    private HashMap<String, Float> thresholds;
-    private HashMap<String, String> columns;
+    private final HashMap<String, Float> thresholds;
+    private final HashMap<String, String> columns;
 
     public SearchRequest(int indexBegin, int indexEnd, int winLength, HashMap<String, Float> thresholds, HashMap<String, String> columns) {
         this.indexBegin = indexBegin;

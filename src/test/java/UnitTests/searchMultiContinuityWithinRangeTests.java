@@ -15,18 +15,18 @@ public class searchMultiContinuityWithinRangeTests {
         Optional<ArrayList<int[]>> ThreeToFiveAndSevenToNine = dataService.returnAllIndicesWithinRange(dataService.getAyData(), 0, 9,(float)3.1,(float) 2,2);
         int[] ThreeToFive = {3,5};
         int[] SevenToEight = {7,8};
-        assertArrayEquals(ThreeToFive, ThreeToFiveAndSevenToNine.get().get(0));
-        assertArrayEquals(SevenToEight, ThreeToFiveAndSevenToNine.get().get(1));
+        ThreeToFiveAndSevenToNine.ifPresent(ints -> assertArrayEquals(ThreeToFive, ints.get(0)));
+        ThreeToFiveAndSevenToNine.ifPresent(ints -> assertArrayEquals(SevenToEight, ints.get(1)));
     }
 
     @org.junit.Test
-    public void testDataServicesearchMultiContinuityWithinRangeArrayListIsEmpty(){
-        Optional<ArrayList<int[]>> shouldNotBePresent = dataService.returnAllIndicesWithinRange(dataService.getWzData(), 0, 9,(float)100,(float) 99,2);
-        assertTrue(shouldNotBePresent.get().isEmpty());
+    public void testDataServiceSearchMultiContinuityWithinRangeArrayListIsEmpty(){
+        Optional<ArrayList<int[]>> shouldNotBeEmpty = dataService.returnAllIndicesWithinRange(dataService.getWzData(), 0, 9,(float)100,(float) 99,2);
+        shouldNotBeEmpty.ifPresent(ints -> assertTrue(ints.isEmpty()));
     }
 
     @org.junit.Test
-    public void searchMultiContinuityWithinRangeOneRowResultLastRowOfData(){
+    public void  testDataServiceSearchMultiContinuityWithinRangeOneRowResultLastRowOfData(){
         Optional<ArrayList<int[]>> shouldBeNineToNine = dataService.returnAllIndicesWithinRange(dataService.getWzData(), 0, 9,(float)4.1,(float) 3.9,1);
         int[] NineToNine = {9,9};
         assertArrayEquals(NineToNine, shouldBeNineToNine.get().get(0));

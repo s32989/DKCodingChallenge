@@ -4,26 +4,30 @@ import com.dkchallenge.springboot.constants.SearchFunctions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Optional;
 
-import java.io.*;
-import java.util.*;
 
 @Service
 public class DataService {
 
-    private HashMap<Integer, Float> axData = new HashMap<Integer, Float>();
-    private HashMap<Integer, Float> ayData = new HashMap<Integer, Float>();
-    private HashMap<Integer, Float> azData = new HashMap<Integer, Float>();
-    private HashMap<Integer, Float> wxData = new HashMap<Integer, Float>();
-    private HashMap<Integer, Float> wyData = new HashMap<Integer, Float>();
-    private HashMap<Integer, Float> wzData = new HashMap<Integer, Float>();
+    private final HashMap<Integer, Float> axData = new HashMap<>();
+    private final HashMap<Integer, Float> ayData = new HashMap<>();
+    private final HashMap<Integer, Float> azData = new HashMap<>();
+    private final HashMap<Integer, Float> wxData = new HashMap<>();
+    private final HashMap<Integer, Float> wyData = new HashMap<>();
+    private final HashMap<Integer, Float> wzData = new HashMap<>();
 
+    public DataService(){
+        this.getData("latestSwing.csv");
+    }
 
     public DataService(String fileName) {
         this.getData(fileName);
-    }
-    public DataService(){
-        this.getData("latestSwing.csv");
     }
 
     public HashMap<Integer, Float> getAxData() {
@@ -71,7 +75,7 @@ public class DataService {
     public Optional<?> searchData(String searchFunction, HashMap<String, String> columns, int indexBegin, int indexEnd, HashMap<String, Float> thresholds, int winLength){
 
         Optional<?> data;
-        switch(searchFunction){
+        switch (searchFunction) {
             case SearchFunctions.searchContinuityAboveValue:
                 data = returnIndexOfContinuityAboveValue(getColumnData(columns.get("column1")), indexBegin, indexEnd, thresholds.get("threshold"), winLength);
                 break;
@@ -79,7 +83,7 @@ public class DataService {
                 data = returnIndexOfContinuityWithinRange(getColumnData(columns.get("column1")), indexBegin, indexEnd, thresholds.get("thresholdHi"), thresholds.get("thresholdLow"), winLength);
                 break;
             case SearchFunctions.searchContinuityAboveValueTwoSignals:
-                data = returnIndexOfDataWithinBothThresholds(getColumnData(columns.get("column1")),getColumnData(columns.get("column2")), indexBegin, indexEnd, thresholds.get("threshold1"), thresholds.get("threshold2"), winLength);
+                data = returnIndexOfDataWithinBothThresholds(getColumnData(columns.get("column1")), getColumnData(columns.get("column2")), indexBegin, indexEnd, thresholds.get("threshold1"), thresholds.get("threshold2"), winLength);
                 break;
             case SearchFunctions.searchMultiContinuityWithinRange:
                 data = returnAllIndicesWithinRange(getColumnData(columns.get("column1")), indexBegin, indexEnd, thresholds.get("thresholdHi"), thresholds.get("thresholdLow"), winLength);
@@ -119,7 +123,7 @@ public class DataService {
         Optional<Integer> index = Optional.empty();
         int counter = 0;
 
-        for(int i = indexBegin; i >= indexEnd; i--){
+        for (int i = indexBegin; i >= indexEnd; i--){
 
             float dataPoint = columnData.get(i);
 
@@ -182,7 +186,7 @@ public class DataService {
 
             float dataPoint = columnData.get(i);
 
-            if (dataPoint > thresholdLow && dataPoint < thresholdHi){               //Data is within thresholds
+            if (dataPoint > thresholdLow && dataPoint < thresholdHi){
                 rowCounter++;
                 if(rowCounter >= winLength) {
 
@@ -190,11 +194,11 @@ public class DataService {
                     firstIndex = i - rowCounter + 1;
                     lastIndex = i;
 
-                    if(i == indexEnd){                                              //last item of data on the list
+                    if(i == indexEnd){
                         listOfIndices.get().add(new int[]{firstIndex, lastIndex});
                     }
                 }
-            } else if (!(dataPoint > thresholdLow && dataPoint < thresholdHi)){     //Data is not within thresholds
+            } else if (!(dataPoint > thresholdLow && dataPoint < thresholdHi)){
                 if (winLengthMet){
                     lastIndex = i  - 1;
                     listOfIndices.get().add(new int[]{firstIndex, lastIndex});
